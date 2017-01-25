@@ -18,6 +18,11 @@ parameters:
   displayName: Source Ref
   required: true
   value: master
+- name: GIT_SOURCE_REF
+  description: The URL of your corporate Maven mirror (eg: Sonatype Nexus)
+  displayName: Maven mirror url
+  required: false
+  value: 'http://nexus-cicd.cloud.rramalho.com/'
 - description: A secret string used to configure the GitHub webhook.
   displayName: GitHub Webhook Secret
   from: '[a-zA-Z0-9]{40}'
@@ -110,6 +115,10 @@ objects:
         from:
           kind: ImageStreamTag
           name: tomcat:6.0.48-jre7
+        env:
+          -
+            name: MAVEN_MIRROR_URL
+            value: '${MAVEN_MIRROR_URL}'
     triggers: {}
 - apiVersion: v1
   kind: DeploymentConfig

@@ -21,3 +21,7 @@ spec:
       from:
         kind: "ImageStreamTag"
         name: "tomcat:6.0.48-jre7"
+      env:
+        -
+          name: MAVEN_MIRROR_URL
+          value: 'http://nexus-cicd.cloud.rramalho.com/'        

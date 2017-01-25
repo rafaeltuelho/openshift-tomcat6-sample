@@ -15,6 +15,9 @@ node("maven") {
 }
 node {
   stage("Build Image") {
+    sh "oc whoami"
+    sh "oc project"
+    sh "oc get bc"
     sh "oc start-build ${appName}-docker --follow -n ${project}"
   }
   stage("Deploy") {
