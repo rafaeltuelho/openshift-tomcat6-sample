@@ -1,0 +1,14 @@
+Template:
+  parameters
+  ImageStream da app
+  ImageStream do wildfly
+  BuildConfig com jenkinsPipelineStrategy
+    Checkout do código
+    Build via maven
+    Stash do WAR
+    Invoca o build docker
+    Invoka o DeploymentConfig da app
+  BuildConfig com dockerStrategy
+    Binary build injetanto o WAR contruído no passo anterior.
+  DeploymentConfig
+  Service

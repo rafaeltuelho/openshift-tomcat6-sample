@@ -1,0 +1,239 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: tomcat6-pipeline-template
+parameters:
+- name: APP_NAME
+  description: The name assigned to all of the application objects defined in this template.
+  displayName: Application Name
+  required: true
+  value: openshift-pcweb
+- name: GIT_SOURCE_URL
+  description: The source URL for the application
+  displayName: Source URL
+  required: true
+  value: http://gogs-cicd.cloud.rramalho.com/gogs/openshift-tomcat6-sample.git
+- name: GIT_SOURCE_REF
+  description: The source Ref for the application
+  displayName: Source Ref
+  required: true
+  value: master
+- description: A secret string used to configure the GitHub webhook.
+  displayName: GitHub Webhook Secret
+  from: '[a-zA-Z0-9]{40}'
+  generate: expression
+  name: GITHUB_WEBHOOK_SECRET
+  required: true
+- description: A secret string used to configure the Generic webhook.
+  displayName: Generic Webhook Secret
+  from: '[a-zA-Z0-9]{40}'
+  generate: expression
+  name: GENERIC_WEBHOOK_SECRET
+  required: true
+objects:
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: ${APP_NAME}
+    name: ${APP_NAME}
+  spec: {}
+  status:
+    dockerImageRepository: ""
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: tomcat
+  spec:
+    tags:
+    - annotations:
+        supports: tomcat:6.0.48-jre7,java
+        tags: tomcat,java
+        version: "6.0.48-jre7"
+      from:
+        kind: DockerImage
+        name: tomcat:6.0.48-jre7
+      name: "6.0.48-jre7"
+    - annotations:
+        supports: web,java
+        tags: tomcat,java
+      from:
+        kind: ImageStreamTag
+        name: "6.0.48-jre7"
+      name: latest
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      pipeline.alpha.openshift.io/uses: '[{"name": "${NAME}", "namespace": "", "kind": "DeploymentConfig"}]'
+    creationTimestamp: null
+    labels:
+      name: ${APP_NAME}
+    name: ${APP_NAME}
+  spec:
+    source:
+      type: "Git"
+      git:
+        uri: "http://gogs-cicd.cloud.rramalho.com/gogs/openshift-tomcat6-sample.git"
+        contextDir: "openshift"
+    strategy:
+      jenkinsPipelineStrategy:
+        jenkinsfilePath: jenkins/Jenkinsfile.groovy
+      type: JenkinsPipeline
+    triggers:
+    - github:
+        secret: "${GITHUB_WEBHOOK_SECRET}"
+      type: GitHub
+    - generic:
+        secret: "${GENERIC_WEBHOOK_SECRET}"
+      type: Generic
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: ${APP_NAME}-docker
+    name: ${APP_NAME}-docker
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${APP_NAME}:latest
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      type: "Git"
+      git:
+        uri: http://gogs-cicd.cloud.rramalho.com/gogs/openshift-tomcat6-sample.git
+        ref: "master"
+      dockerfile: |-
+        FROM tomcat:6.0.48-jre7
+        LABEL maintainer "Rafael T. C. Soares <rafaelcba@gmail.com>"
+        RUN echo "copy config files"
+        COPY tomcat6/conf/ /usr/local/tomcat/conf/
+        RUN echo "copy 3rd party shared libs"
+        COPY tomcat6/lib/ /usr/local/tomcat/lib/
+        RUN echo "copy app WAR file from nexus releases public repository"
+        RUN wget -O /tmp/samplewebapp.war http://nexus-cicd.cloud.rramalho.com/content/repositories/releases/com/openshift/samples/samplewebapp/1.0/samplewebapp-1.0.war && \
+            mv /tmp/samplewebapp.war /usr/local/tomcat/webapps/
+        RUN echo "create a non-root tomcat user and change base image permissions for execution on Openshift enviroment..."
+        RUN groupadd -g 1001 -r tomcat
+        RUN useradd -c "Apache Tomcat user admin" -u 1001 -g tomcat -s /sbin/nologin -r -d /usr/local/tomcat/ tomcat
+        RUN chown -R tomcat:tomcat /usr/local/tomcat
+        USER tomcat
+      contextDir: "openshift/docker"
+    strategy:
+      dockerStrategy:
+        env:
+          - name: "BUILD_LOGLEVEL"
+          value: "4"
+        from:
+          kind: ImageStreamTag
+          name: tomcat:6.0.48-jre7
+      type: Docker
+    triggers: {}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: ${APP_NAME}
+    name: ${APP_NAME}
+  spec:
+    replicas: 1
+    selector:
+      app: ${APP_NAME}
+      deploymentconfig: ${APP_NAME}
+    strategy:
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          app: ${APP_NAME}
+          deploymentconfig: ${APP_NAME}
+      spec:
+        containers:
+        - image: ${APP_NAME}:latest
+          imagePullPolicy: Always
+          name: ${APP_NAME}
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            timeoutSeconds: 2
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${APP_NAME}
+        from:
+          kind: ImageStreamTag
+          name: ${APP_NAME}:latest
+      type: ImageChange
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    labels:
+      app: ${APP_NAME}
+    name: ${APP_NAME}
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      app: ${APP_NAME}
+      deploymentconfig: ${APP_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${APP_NAME}
+    labels:
+      app: ${APP_NAME}
+  spec:
+    to:
+      kind: Service
+      name: ${APP_NAME}
+      weight: 100
+    port:
+      targetPort: 8080-tcp
+    wildcardPolicy: None
