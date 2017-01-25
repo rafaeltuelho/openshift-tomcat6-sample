@@ -2,8 +2,8 @@ kind: "BuildConfig"
 apiVersion: "v1"
 metadata:
   labels:
-    app: "tomcat6-webapp-docker"
-  name: "tomcat6-webapp-docker"
+    app: "openshift-tomcat6-sample-docker"
+  name: "openshift-tomcat6-sample-docker"
 spec:
   output:
     to:
