@@ -7,7 +7,7 @@ parameters:
   description: The name assigned to all of the application objects defined in this template.
   displayName: Application Name
   required: true
-  value: openshift-pcweb
+  value: tomcat6-webapp
 - name: GIT_SOURCE_URL
   description: The source URL for the application
   displayName: Source URL
@@ -60,7 +60,7 @@ objects:
       from:
         kind: ImageStreamTag
         name: "6.0.48-jre7"
-      name: latest
+      name: 6.0.48-jre7
 - apiVersion: v1
   kind: BuildConfig
   metadata:
@@ -75,7 +75,7 @@ objects:
       type: "Git"
       git:
         uri: "http://gogs-cicd.cloud.rramalho.com/gogs/openshift-tomcat6-sample.git"
-        contextDir: "openshift"
+      contextDir: "openshift"
     strategy:
       jenkinsPipelineStrategy:
         jenkinsfilePath: jenkins/Jenkinsfile.groovy
@@ -98,39 +98,18 @@ objects:
       to:
         kind: ImageStreamTag
         name: ${APP_NAME}:latest
-    postCommit: {}
-    resources: {}
     runPolicy: Serial
     source:
       type: "Git"
       git:
-        uri: http://gogs-cicd.cloud.rramalho.com/gogs/openshift-tomcat6-sample.git
-        ref: "master"
-      dockerfile: |-
-        FROM tomcat:6.0.48-jre7
-        LABEL maintainer "Rafael T. C. Soares <rafaelcba@gmail.com>"
-        RUN echo "copy config files"
-        COPY tomcat6/conf/ /usr/local/tomcat/conf/
-        RUN echo "copy 3rd party shared libs"
-        COPY tomcat6/lib/ /usr/local/tomcat/lib/
-        RUN echo "copy app WAR file from nexus releases public repository"
-        RUN wget -O /tmp/samplewebapp.war http://nexus-cicd.cloud.rramalho.com/content/repositories/releases/com/openshift/samples/samplewebapp/1.0/samplewebapp-1.0.war && \
-            mv /tmp/samplewebapp.war /usr/local/tomcat/webapps/
-        RUN echo "create a non-root tomcat user and change base image permissions for execution on Openshift enviroment..."
-        RUN groupadd -g 1001 -r tomcat
-        RUN useradd -c "Apache Tomcat user admin" -u 1001 -g tomcat -s /sbin/nologin -r -d /usr/local/tomcat/ tomcat
-        RUN chown -R tomcat:tomcat /usr/local/tomcat
-        USER tomcat
+        uri: "http://gogs-cicd.cloud.rramalho.com/gogs/openshift-tomcat6-sample.git"
       contextDir: "openshift/docker"
     strategy:
+      type: "Docker"
       dockerStrategy:
-        env:
-          - name: "BUILD_LOGLEVEL"
-          value: "4"
         from:
           kind: ImageStreamTag
           name: tomcat:6.0.48-jre7
-      type: Docker
     triggers: {}
 - apiVersion: v1
   kind: DeploymentConfig
