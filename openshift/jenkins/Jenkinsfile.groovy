@@ -16,13 +16,13 @@ node("maven") {
 }
 node {
   stage("Build Image") {
-    sh "oc whoami"
-    sh "oc project"
-    sh "oc get bc"
-    openshiftBuild buildConfig: buildConfigName, namespace: project, showBuildLogs: 'true'
+    //sh "oc whoami"
+    //sh "oc project"
+    //sh "oc get bc"
+    openshiftBuild bldCfg: buildConfigName, namespace: project, showBuildLogs: 'true'
   }
   stage("Deploy") {
-    sh "oc get bc"
+    //sh "oc get bc"
     openshiftDeploy deploymentConfig: appName, namespace: project
   }
 }
