@@ -1,4 +1,5 @@
 def appName="tomcat6-webapp"
+def buildConfigName="${appName}-docker"
 def project=""
 node {
   stage("Initialize") {
@@ -18,8 +19,9 @@ node {
     sh "oc whoami"
     sh "oc project"
     sh "oc get bc"
-    //sh "oc start-build ${appName}-docker --follow -n ${project}"
-    openshiftBuild buildConfig: ${appName}-docker, namespace: project, showBuildLogs: 'true'
+    sh "oc start-build ${appName}-docker --follow -n ${project}"
+
+    openshiftBuild buildConfig: buildConfigName, namespace: project, showBuildLogs: 'true'
   }
   stage("Deploy") {
     sh "oc get bc"
