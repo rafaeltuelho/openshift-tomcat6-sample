@@ -19,8 +19,6 @@ node {
     sh "oc whoami"
     sh "oc project"
     sh "oc get bc"
-    sh "oc start-build ${appName}-docker --follow -n ${project}"
-
     openshiftBuild buildConfig: buildConfigName, namespace: project, showBuildLogs: 'true'
   }
   stage("Deploy") {
