@@ -19,10 +19,10 @@ node {
     sh "oc project"
     sh "oc get bc"
     //sh "oc start-build ${appName}-docker --follow -n ${project}"
-    openshiftBuild buildConfig: ${appName}-docker, namespace: ${project}, showBuildLogs: 'true', verbose: 'true'
+    openshiftBuild buildConfig: ${appName}-docker, namespace: project, showBuildLogs: 'true'
   }
   stage("Deploy") {
     sh "oc get bc"
-    openshiftDeploy deploymentConfig: ${appName}, namespace: ${project}
+    openshiftDeploy deploymentConfig: appName, namespace: project
   }
 }
