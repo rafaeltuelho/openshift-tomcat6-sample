@@ -16,7 +16,7 @@ node("maven") {
     echo " =========== ^^^^^^^^^^^^ Reading pom.xml "
     pom = readMavenPom file: 'pom.xml'
     projectGroupId = pom.groupId.replace('.', '/')
-    projectArtifactFinalName = pom.build.finalName
+    projectArtifactFinalName = pom.artifactId
     projectArtifactReleaseVersion = pom.version
     echo "projectGroupId: ${projectGroupId},\n projectArtifactFinalName: ${projectArtifactFinalName},\n projectArtifactReleaseVersion: ${projectArtifactReleaseVersion}"
 
