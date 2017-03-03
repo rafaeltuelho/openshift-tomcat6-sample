@@ -1,6 +1,8 @@
 def appName="tomcat6-webapp"
 def buildConfigName="${appName}-docker"
 def project=""
+def projectArtifactFinalName=""
+def projectArtifactReleaseVersion=""
 node {
   stage("Initialize") {
     project = env.PROJECT_NAME
@@ -11,6 +13,13 @@ node("maven") {
     git url: "http://gogs-cicd.cloud.rramalho.com/gogs/openshift-tomcat6-sample.git", branch: "master"
   }
   stage("Build WAR") {
+    echo " =========== ^^^^^^^^^^^^ Reading pom.xml "
+    pom = readMavenPom file: 'pom.xml'
+    projectGroupId = pom.groupId.replace('.', '/')
+    projectArtifactFinalName = pom.build.finalName
+    projectArtifactReleaseVersion = pom.version
+    echo "projectGroupId: ${projectGroupId},\n projectArtifactFinalName: ${projectArtifactFinalName},\n projectArtifactReleaseVersion: ${projectArtifactReleaseVersion}"
+
     sh "mvn clean package deploy -Popenshift-tomcat6 -s openshift/maven/settings.xml"
   }
 }
@@ -19,7 +28,7 @@ node {
     //sh "oc whoami"
     //sh "oc project"
     //sh "oc get bc"
-    openshiftBuild bldCfg: buildConfigName, namespace: project, showBuildLogs: 'true'
+    openshiftBuild bldCfg: buildConfigName, namespace: project, showBuildLogs: 'true', env : [ [ name : 'projectGroupId', value : projectGroupId ], [ name : 'projectArtifactFinalName', value : projectArtifactFinalName ], [ name : 'projectArtifactReleaseVersion', value : projectArtifactReleaseVersion ] ]
   }
   stage("Deploy") {
     //sh "oc get bc"
