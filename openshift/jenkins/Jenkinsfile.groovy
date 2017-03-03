@@ -15,10 +15,12 @@ node("maven") {
   stage("Build WAR") {
     echo " =========== ^^^^^^^^^^^^ Reading pom.xml "
     pom = readMavenPom file: 'pom.xml'
-    projectGroupId = pom.groupId.replace('.', '/')
+    projectGroupId = pom.groupId
     projectArtifactFinalName = pom.artifactId
     projectArtifactReleaseVersion = pom.version
-    echo "projectGroupId: ${projectGroupId},\n projectArtifactFinalName: ${projectArtifactFinalName},\n projectArtifactReleaseVersion: ${projectArtifactReleaseVersion}"
+    echo " projectGroupId: ${projectGroupId}"
+    echo " projectArtifactFinalName: ${projectArtifactFinalName}"
+    echo " projectArtifactReleaseVersion: ${projectArtifactReleaseVersion}"
 
     sh "mvn clean package deploy -Popenshift-tomcat6 -s openshift/maven/settings.xml"
   }
@@ -28,7 +30,15 @@ node {
     //sh "oc whoami"
     //sh "oc project"
     //sh "oc get bc"
-    openshiftBuild bldCfg: buildConfigName, namespace: project, showBuildLogs: 'true', env : [ [ name : 'projectGroupId', value : projectGroupId ], [ name : 'projectArtifactFinalName', value : projectArtifactFinalName ], [ name : 'projectArtifactReleaseVersion', value : projectArtifactReleaseVersion ] ]
+    openshiftBuild
+      bldCfg: buildConfigName,
+      namespace: project,
+      showBuildLogs: 'true',
+      env : [
+        [ name : 'projectGroupId', value : projectGroupId.replace('.', '/') ],
+        [ name : 'projectArtifactFinalName', value : projectArtifactFinalName ],
+        [ name : 'projectArtifactReleaseVersion', value : projectArtifactReleaseVersion ]
+      ]
   }
   stage("Deploy") {
     //sh "oc get bc"
