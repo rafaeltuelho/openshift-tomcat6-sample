@@ -1,8 +1,10 @@
 def appName="tomcat6-webapp"
 def buildConfigName="${appName}-docker"
 def project=""
+def projectGroupId=""
 def projectArtifactFinalName=""
 def projectArtifactReleaseVersion=""
+
 node {
   stage("Initialize") {
     project = env.PROJECT_NAME
@@ -30,10 +32,7 @@ node {
     //sh "oc whoami"
     //sh "oc project"
     //sh "oc get bc"
-    openshiftBuild
-      bldCfg: buildConfigName,
-      namespace: project,
-      showBuildLogs: 'true',
+    openshiftBuild bldCfg: buildConfigName, namespace: project, showBuildLogs: 'true',
       env : [
         [ name : 'projectGroupId', value : projectGroupId.replace('.', '/') ],
         [ name : 'projectArtifactFinalName', value : projectArtifactFinalName ],
