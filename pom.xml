@@ -5,13 +5,15 @@
     <groupId>com.openshift.samples</groupId>
     <artifactId>samplewebapp</artifactId>
     <packaging>war</packaging>
-    <version>4.0</version>
+    <version>4.1</version>
     <name>SampleApp</name>
 
     <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <maven.compiler.source>1.7</maven.compiler.source>
     	<maven.compiler.target>1.7</maven.compiler.target>
+      <maven.releases.url>http://nexus-cicd.cloud.rramalho.com/content/repositories/releases/</maven.releases.url>
+      <maven.snapshots.url>http://nexus-cicd.cloud.rramalho.com/content/repositories/snapshots/</maven.snapshots.url>
     </properties>
 
     <dependencies>
@@ -51,12 +53,12 @@
      <distributionManagement>
         <snapshotRepository>
           <id>nexus-snapshots</id>
-          <url>http://nexus-cicd.cloud.rramalho.com/content/repositories/snapshots/</url>
+          <url>maven.snapshots.url</url>
         </snapshotRepository>
         <repository>
           <id>nexus-releases</id>
           <name>releases</name>
-          <url>http://nexus-cicd.cloud.rramalho.com/content/repositories/releases/</url>
+          <url>maven.releases.url</url>
         </repository>
      </distributionManagement>
      <build>

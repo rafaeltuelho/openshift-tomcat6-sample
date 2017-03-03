@@ -14,6 +14,10 @@
 	</server>
 </servers>
 
+<properties>
+	<maven.mirror.url>http://gogs-cicd.cloud.rramalho.com/content/groups/public/</maven.mirror.url>
+</properties>
+
 <profiles>
     <profile>
       <id>jboss-public-repository</id>
@@ -87,7 +91,7 @@
         <repository>
           <id>openshift-nexus</id>
           <name>nexus</name>
-          <url>http://gogs-cicd.cloud.rramalho.com/content/groups/public/</url>
+          <url>${maven.mirror.url}</url>
           <releases>
             <enabled>true</enabled>
             <updatePolicy>daily</updatePolicy>
@@ -102,7 +106,7 @@
         <pluginRepository>
           <id>openshift-nexus</id>
           <name>nexus</name>
-          <url>http://gogs-cicd.cloud.rramalho.com/content/groups/public/</url>
+          <url>${maven.mirror.url}</url>
           <releases>
             <enabled>true</enabled>
             <updatePolicy>daily</updatePolicy>
