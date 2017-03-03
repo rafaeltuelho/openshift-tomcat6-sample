@@ -24,7 +24,7 @@ node("maven") {
     echo " projectArtifactFinalName: ${projectArtifactFinalName}"
     echo " projectArtifactReleaseVersion: ${projectArtifactReleaseVersion}"
 
-    sh "mvn clean package deploy -Popenshift-tomcat6 -s openshift/maven/settings.xml"
+    sh "mvn clean package deploy -Popenshift-tomcat6,openshift-nexus -s openshift/maven/settings.xml"
   }
 }
 node {
