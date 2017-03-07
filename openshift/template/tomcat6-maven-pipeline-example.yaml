@@ -22,7 +22,7 @@ parameters:
   description: The URL of your corporate Maven mirror (eg: Sonatype Nexus)
   displayName: Maven mirror url
   required: false
-  value: 'http://nexus-cicd.cloud.rramalho.com/'
+  value: 'http://nexus-cicd.cloud.rramalho.com'
 - description: A secret string used to configure the GitHub webhook.
   displayName: GitHub Webhook Secret
   from: '[a-zA-Z0-9]{40}'
