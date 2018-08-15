@@ -5,15 +5,13 @@
     <groupId>com.openshift.samples</groupId>
     <artifactId>samplewebapp</artifactId>
     <packaging>war</packaging>
-    <version>4.1</version>
+    <version>1.0</version>
     <name>SampleApp</name>
 
     <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <maven.compiler.source>1.7</maven.compiler.source>
     	<maven.compiler.target>1.7</maven.compiler.target>
-      <maven.releases.url>http://nexus-cicd.cloud.rramalho.com/content/repositories/releases/</maven.releases.url>
-      <maven.snapshots.url>http://nexus-cicd.cloud.rramalho.com/content/repositories/snapshots/</maven.snapshots.url>
     </properties>
 
     <dependencies>
@@ -50,17 +48,6 @@
     </profile>
     <profile>
      <id>openshift-tomcat6</id>
-     <distributionManagement>
-        <snapshotRepository>
-          <id>nexus-snapshots</id>
-          <url>${maven.snapshots.url}</url>
-        </snapshotRepository>
-        <repository>
-          <id>nexus-releases</id>
-          <name>releases</name>
-          <url>${maven.releases.url}</url>
-        </repository>
-     </distributionManagement>
      <build>
         <finalName>samplewebapp</finalName>
         <plugins>
